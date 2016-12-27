@@ -14,13 +14,13 @@ There are separate Strongback Command Line Interface (CLI) executables for these
 
 * Windows 32-bit (x86)
 * Linux (64-bit x86)
-* Mac OS X 10.7 and higher
+* MacOS or OS X 10.7 and higher
 
 The instructions for Windows differ slightly from those for OS X and Linux.
 
 ### Windows
 
-Look at the [latest releases](https://github.com/strongback/strongback-cli/releases) of this utility, and download the file that ends with `-windows.zip` or `-windows.tar.gz` for the latest stable release. The archive contains a single `<strongback.exe` file, so unzip or unpack the archive into any directory that is already included in or that [you can add to the `%PATH%` environment variable](http://www.howtogeek.com/118594/how-to-edit-your-system-path-for-easy-command-line-access/). We recommend your home directory, e.g., `C:\\Users\\<you>`.
+Look at the [latest releases](https://github.com/strongback/strongback-cli/releases) of this utility, and download the file that ends with `...-windows.zip` or `...-windows.tar.gz` for the latest stable release. The archive contains a single `strongback.exe` file, so unzip or unpack the archive into any directory that is already included in or that [you can add to the `%PATH%` environment variable](http://www.howtogeek.com/118594/how-to-edit-your-system-path-for-easy-command-line-access/). We recommend your home directory, e.g., `C:\Users\<you>`.
 
 After you've extracted the file and [added the directory to your `%PATH%`](http://www.howtogeek.com/118594/how-to-edit-your-system-path-for-easy-command-line-access/), open up a command window and run the following command from several different directories:
 
@@ -28,31 +28,39 @@ After you've extracted the file and [added the directory to your `%PATH%`](http:
 
 This will show you the installed versions of the Strongback Java Library and WPILib for Java library.
 
-### Linux and OS X
+### Linux
 
-Simply download the [latest version](https://github.com/strongback/strongback-cli/releases) of the `tar.gz` file and unpack it into any directory that is already on your `PATH` _except your home directory_. We recommend a `bin` directory in your home account.
-
-To create the `bin` directory, use the following commands:
+The Strongback CLI tool can go anywhere _except your home directory_. We recommend a `bin` directory in your home account. To create the `bin` directory and add it to your path, use the following commands:
 
     $ cd ~
     $ mkdir -p ~/bin
-
-which will work even if the `~/bin` directory exists. Add the `~/bin` directory to your path:
-
     $ echo "PATH=\${HOME}/bin:\${PATH}" >> ~/.bashrc
     $ source ~/.bashrc
 
-Then, download and install the `strongback` executable into your `bin` directory. You can use the following commands, though be sure to replace both "1.0.0" sequences with the [latest version](https://github.com/strongback/strongback-cli/releases):
-
-For OS X:
-
-    $ cd ~/bin
-    $ curl -o https://github.com/strongback/strongback-cli/releases/download/v1.0.0/strongback-cli-1.0.0-osx.tar.gz | tar xvz
-
-For Linux:
+Then, download and install the `strongback` executable into your `bin` directory. You can use the following commands, though be sure to replace both `1.0.0` sequences in the URL with the [latest version](https://github.com/strongback/strongback-cli/releases):
 
     $ cd ~/bin
     $ curl -o https://github.com/strongback/strongback-cli/releases/download/v1.0.0/strongback-cli-1.0.0-linux.tar.gz | tar xvz
+
+That's it! Open up a new terminal and run the following:
+
+    $ strongback info
+
+This will show you the installed versions of the Strongback Java Library and WPILib for Java library.
+
+### OS X and MacOS
+
+The Strongback CLI tool can go anywhere _except your home directory_. We recommend a `bin` directory in your home account. To create the `bin` directory and add it to your path, use the following commands:
+
+    $ cd ~
+    $ mkdir -p ~/bin
+    $ echo "PATH=\${HOME}/bin:\${PATH}" >> ~/.bashrc
+    $ source ~/.bashrc
+
+Then, download and install the `strongback` executable into your `bin` directory. You can use the following commands, though be sure to replace both `1.0.0` sequences in the URL with the [latest version](https://github.com/strongback/strongback-cli/releases):
+
+    $ cd ~/bin
+    $ curl -o https://github.com/strongback/strongback-cli/releases/download/v1.0.0/strongback-cli-1.0.0-osx.tar.gz | tar xvz
 
 That's it! Open up a new terminal and run the following:
 
