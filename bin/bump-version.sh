@@ -45,7 +45,7 @@ git commit -m "Bump version to $version"
 echo "Creating v$version tag"
 git tag v$version
 
-$ROOT_DIR/bin/generate-changelog $old_version $version
-$ROOT_DIR/bin/commit-version-bump
+$ROOT_DIR/bin/generate-changelog.sh $old_version $version
+$ROOT_DIR/bin/commit-version-bump.sh
 
 echo -e "All Done! Review commit log and push to GitHub if all looks good."
