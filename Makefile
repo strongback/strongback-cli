@@ -75,7 +75,7 @@ package-linux: out/linux
 .PHONY: package-windows
 package-windows: out/windows
 	$(info Windows: packaging archive)
-	@tar -czf ${OUTPUT_DIR}/strongback-cli-${VERSION}-windows.tar.gz -C ${OUTPUT_DIR}/windows strongback.exe
+	@zip -r -j ${OUTPUT_DIR}/strongback-cli-${VERSION}-windows.zip ${OUTPUT_DIR}/windows > /dev/null
 
 #
 # Dependencies 
