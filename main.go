@@ -233,6 +233,11 @@ func (env *Environment) PrintInfo() {
     fmt.Println("WPILib Java Library")
     if env.existingWpiLib.installed {
         fmt.Println("  location:         " + env.existingWpiLib.path)
+        if env.teamNumber != 0 {
+            fmt.Println("  team number:      " + env.teamNumber)
+        } else {
+            fmt.Println("  team number:      <create robot project in Eclipse>")
+        }
     } else {
         fmt.Println("  not yet installed")
     }
