@@ -5,7 +5,6 @@
 * Corrected release scripts
 
 ## 1.0.0
-
 * Updated release scripts
 * Updated new-project to use different default package and to fail if not specified and WPILib is not yet initialized
 * Added printing of team number under WPILib section
