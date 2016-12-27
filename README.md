@@ -1,6 +1,6 @@
 ## Strongback Command Line Interface (CLI)
 
-[Strongback](http://strongback.org) is a Java library for FRC robots, and to use it you must first install the library onto your development machine and set it up properly. This can be tedious and somewhat complicated, so the Strongback Command Line Interface (CLI) tool provides an easy-to-use way to interact with the library using the command line. The Strongback CLI consists of a single, entirely self-contained executable program -- simply download the right program for your operating system and then run it to:
+[Strongback](http://strongback.org) is a Java library for FRC robots, and to use it you must first install the library onto your development machine and set it up properly. This can be tedious and somewhat complicated, so we created the Strongback Command Line Interface (CLI) tool. It's a small self-contained executable program for Linux, Windows, and MacOS that makes it easy to install, upgrade, and use the Strongback Java Library. It can:
 
 * list the Strongback Java Library versions that are available
 * install, upgrade, restore, or uninstall the Strongback Java Library version
@@ -8,15 +8,13 @@
 * decode a binary data file recorded by the Strongback library running on a robot
 * show information about the installed Strongback and WPILib for Java
 
-## Installing the Strongback CLI
+## Running the Strongback CLI
 
 There are separate Strongback Command Line Interface (CLI) executables for these operating systems:
 
 * Windows 32-bit (x86)
 * Linux (64-bit x86)
 * MacOS or OS X 10.7 and higher
-
-The instructions for Windows differ slightly from those for OS X and Linux.
 
 ### Windows
 
@@ -39,10 +37,10 @@ The Strongback CLI tool can go anywhere _except your home directory_. We recomme
     $ echo "PATH=\${HOME}/bin:\${PATH}" >> ~/.bashrc
     $ source ~/.bashrc
 
-Then, download and install the `strongback` executable into your `bin` directory. You can use the following commands, though be sure to replace both `1.0.0` sequences in the URL with the [latest version](https://github.com/strongback/strongback-cli/releases):
+Then, use the following commands to download the `strongback` executable and place it into your `bin` directory, though be sure to replace both `1.0.1` sequences in the URL with the [latest version](https://github.com/strongback/strongback-cli/releases):
 
     $ cd ~/bin
-    $ curl -o https://github.com/strongback/strongback-cli/releases/download/v1.0.0/strongback-cli-1.0.0-linux.tar.gz | tar xvz
+    $ curl -o https://github.com/strongback/strongback-cli/releases/download/v1.0.1/strongback-cli-1.0.1-linux.tar.gz | tar xvz
 
 That's it! Open up a new terminal and run the following:
 
@@ -59,10 +57,10 @@ The Strongback CLI tool can go anywhere _except your home directory_. We recomme
     $ echo "PATH=\${HOME}/bin:\${PATH}" >> ~/.bashrc
     $ source ~/.bashrc
 
-Then, download and install the `strongback` executable into your `bin` directory. You can use the following commands, though be sure to replace both `1.0.0` sequences in the URL with the [latest version](https://github.com/strongback/strongback-cli/releases):
+Then, use the following commands to download the `strongback` executable and place it into your `bin` directory, though be sure to replace both `1.0.1` sequences in the URL with the [latest version](https://github.com/strongback/strongback-cli/releases):
 
     $ cd ~/bin
-    $ curl -o https://github.com/strongback/strongback-cli/releases/download/v1.0.0/strongback-cli-1.0.0-macos.tar.gz | tar xvz
+    $ curl -o https://github.com/strongback/strongback-cli/releases/download/v1.0.1/strongback-cli-1.0.1-macos.tar.gz | tar xvz
 
 That's it! Open up a new terminal and run the following:
 
