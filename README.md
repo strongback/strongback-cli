@@ -1,4 +1,4 @@
-== Strongback Command Line Interface (CLI)
+## Strongback Command Line Interface (CLI)
 
 [Strongback](http://strongback.org) is a Java library for FRC robots, and to use it you must first install the library onto your development machine and set it up properly. This can be tedious and somewhat complicated, so the Strongback Command Line Interface (CLI) tool provides an easy-to-use way to interact with the library using the command line. The Strongback CLI consists of a single, entirely self-contained executable program -- simply download the right program for your operating system and then run it to:
 
@@ -8,7 +8,7 @@
 * decode a binary data file recorded by the Strongback library running on a robot
 * show information about the installed Strongback and WPILib for Java
 
-== Installing the Strongback CLI
+## Installing the Strongback CLI
 
 There are separate Strongback Command Line Interface (CLI) executables for these operating systems:
 
@@ -18,7 +18,7 @@ There are separate Strongback Command Line Interface (CLI) executables for these
 
 The instructions for Windows differ slightly from those for OS X and Linux.
 
-=== On Windows
+### Windows
 
 Look at the [latest releases](https://github.com/strongback/strongback-cli/releases) of this utility, and download the file that ends with `-windows.zip` or `-windows.tar.gz` for the latest stable release. The archive contains a single `<strongback.exe` file, so unzip or unpack the archive into any directory that is already included in or that [you can add to the `%PATH%` environment variable](http://www.howtogeek.com/118594/how-to-edit-your-system-path-for-easy-command-line-access/). We recommend your home directory, e.g., `C:\\Users\\<you>`.
 
@@ -28,7 +28,7 @@ After you've extracted the file and [added the directory to your `%PATH%`](http:
 
 This will show you the installed versions of the Strongback Java Library and WPILib for Java library.
 
-=== On Linux and OS X
+### Linux and OS X
 
 Simply download the [latest version](https://github.com/strongback/strongback-cli/releases) of the `tar.gz` file and unpack it into any directory that is already on your `PATH` _except your home directory_. We recommend a `bin` directory in your home account.
 
@@ -60,7 +60,7 @@ That's it! Open up a new terminal and run the following:
 
 This will show you the installed versions of the Strongback Java Library and WPILib for Java library.
 
-== Viewing help
+## Viewing help
 
 The Strongback CLI has built-in help, which you can see by running `strongback help` to display something like:
 
@@ -84,7 +84,7 @@ The Strongback CLI has built-in help, which you can see by running `strongback h
 
 We've already seen the `info` command, and the `version` is similar but more concise. Let's look at several other commands.
 
-== Installing or upgrading Strongback Java Library
+## Installing or upgrading Strongback Java Library
 
 The Strongback CLI makes it easy to list and install the available versions of the Strongback Java Library and to install any of these. Run the following command to list the available versions:
 
@@ -110,7 +110,7 @@ You can use this same command to restore a version that was installed previously
 
 Whenever you install a new version, the CLI will archive any previously installed version in the `~/strongback-archives` directory. Reinstalling one of these simply extracts that archive rather than downloading the archive from the [Strongback releases](https://github.com/strongback/strongback-cli/releases).
 
-== Creating a new robot project
+## Creating a new robot project
 
 You can use the Strongback CLI tool to create a new iterative Java robot project for Eclipse set up to use Strongback, or update an existing Java robot project to use Strongback. Simply run open a terminal, change to the directory where you want the project created, and run the following command:
 
@@ -126,7 +126,7 @@ By default, the Java package will be `org.frc<teamNumber>` where `<teamNumber>` 
 
 See `strongback help new-project` for additional options.
 
-== Decoding a robot data log
+## Decoding a robot data log
 
 The Strongback Java Library has a _data recorder_ capable of recording various channels of data while your robot runs. The resulting data is captured in a binary file on the robot, so you need to download the file from the robot and then decode it. The Strongback CLI's `decode` command will convert the binary file into a _comma separated values_ (or CSV) file that you can import into Google Sheets, Excel, Tableau, or many other programs.
 
@@ -155,13 +155,15 @@ The CSV file will look like:
 The first row contains the comma-separated names of the channels, followed by a newline character. Each of the subsequent line lists the integer value of the data encoded to the precision specified in your robot program. The `Time` channel is always first and the values are in milliseconds.
 
 
-== Uninstalling the Strongback Java Library
+## Uninstalling the Strongback Java Library
 
 To uninstall the Strongback Java Library, simply run
 
     $ strongback uninstall
 
 and your existing installation (if you have one) will be archived.
+
+## Uninstalling all of Strongback
 
 To fully uninstall all of Strongback, including the archives of existing installations, run the following commands:
 
