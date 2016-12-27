@@ -52,11 +52,11 @@ Then compile and package the CLI code for all of the platforms:
 
     $ make all
 
-This command will compile and build all executables and place them in OS-specific directories inside the `out` directory (e.g., `out/osx/strongback`, `out/linux/strongback`, and `out/windows/strongback.exe`). It will also create the `.tar.gz` and `.zip` archives for each of the platforms. 
+This command will compile and build all executables and place them in OS-specific directories inside the `out` directory (e.g., `out/macos/strongback`, `out/linux/strongback`, and `out/windows/strongback.exe`). It will also create the `.tar.gz` and `.zip` archives for each of the platforms. 
 
 As you make changes, you probably want to only compile for your own platform:
 
-    $ make clean out/osx
+    $ make clean out/macos
 
 or
 
@@ -67,7 +67,7 @@ or
 
 To run the compiled CLI tool, simply run the `strongback` (or `strongback.exe`) executable for your platform. For example, run the `help` command on OS using:
 
-    $ out/osx/strongback help
+    $ out/macos/strongback help
 
 or on Linux with:
 

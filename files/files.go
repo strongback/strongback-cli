@@ -13,6 +13,10 @@ import (
     "github.com/rickar/props"
 )
 
+const (
+    PathSeparator = string(os.PathSeparator)
+)
+
 func UserHomeDir() string {
     if runtime.GOOS == "windows" {
         home := os.Getenv("HOMEDRIVE") + os.Getenv("HOMEPATH")
@@ -86,8 +90,8 @@ func LoadPropertiesFile(path string) *props.Properties {
 
 func CreateTar(destinationfile string, parentDir string, nameOfFileOrDirectoryToArchive string, verbose bool) error {
     prefix := parentDir
-    if !strings.HasSuffix(prefix, "/") {
-        prefix = prefix + "/"
+    if !strings.HasSuffix(prefix, PathSeparator) {
+        prefix = prefix + PathSeparator
     }
 
     // Create the tar file and the writer 
@@ -133,7 +137,6 @@ func CreateTar(destinationfile string, parentDir string, nameOfFileOrDirectoryTo
             return err
         }
 
-        // fullPathToFile := sourcedir + string(filepath.Separator) + path
         file, err := os.Open(path)
         if err != nil {
             return err
@@ -149,14 +152,14 @@ func CreateTar(destinationfile string, parentDir string, nameOfFileOrDirectoryTo
     }
 
     // Read the directory structure recursively using our function, skipping symbolic links
-    targetPath := parentDir + "/" + nameOfFileOrDirectoryToArchive
+    targetPath := parentDir + PathSeparator + nameOfFileOrDirectoryToArchive
     return filepath.Walk(targetPath, walkFunc)
 }
 
 func ExtractTar(tarFilePath string, parentDirPath string, verbose bool) error {
     prefix := ""
     if len(parentDirPath) != 0 {
-        prefix = parentDirPath + "/"
+        prefix = parentDirPath + PathSeparator
     }
 
 	// Open the tar file
@@ -188,7 +191,7 @@ func ExtractTar(tarFilePath string, parentDirPath string, verbose bool) error {
         }
 
 		// get the individual filename and extract to the current directory
-        filename := prefix + header.Name
+        filename := filepath.FromSlash(prefix + header.Name)
         if verbose {
             fmt.Println(filename)
         }
@@ -202,8 +205,8 @@ func ExtractTar(tarFilePath string, parentDirPath string, verbose bool) error {
             if err != nil {
             	return err
             }
-            break
         case tar.TypeReg:
+            fallthrough
         case tar.TypeRegA:
             // handle normal file
             dirPath := filepath.Dir(filename)
@@ -229,7 +232,6 @@ func ExtractTar(tarFilePath string, parentDirPath string, verbose bool) error {
             if err != nil {
             	return err
             }
-            break
         default:
             if verbose {
                 fmt.Printf("Unable to untar type : %c in file %s", header.Typeflag, filename)

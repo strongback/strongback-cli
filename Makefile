@@ -20,35 +20,30 @@ LDFLAGS=-ldflags "-w -s -X main.Version=${VERSION} -X main.Date=${BUILD_DATE} -X
 #
 .PHONY: clean
 clean:
-	rm -rf ${OUTPUT_DIR}
+	$(info Cleaning 'out' directory)
+	@rm -rf ${OUTPUT_DIR}
 
 .PHONY: all
-all: osx linux windows
+all: macos linux windows
 
 #
 # Packaging for each OS
 #
-.PHONY: osx
-osx: out/osx package-osx
-	$(info )
-	$(info OSX)
+.PHONY: macos
+macos: out/macos package-macos
 
 .PHONY: linux
 linux: out/linux package-linux
-	$(info )
-	$(info Linux)
 
 .PHONY: windows
 windows: out/windows package-windows
-	$(info )
-	$(info Windows)
 
 #
 # Compile
 #
-out/osx: dependencies
-	$(info OSX:     building executable)
-	@GOOS="darwin" GOARCH="amd64" go build ${LDFLAGS} -o ${OUTPUT_DIR}/osx/strongback ${WHAT}
+out/macos: dependencies
+	$(info macos:   building executable)
+	@GOOS="darwin" GOARCH="amd64" go build ${LDFLAGS} -o ${OUTPUT_DIR}/macos/strongback ${WHAT}
 
 out/linux: dependencies
 	$(info Linux:   building executable)
@@ -65,13 +60,13 @@ test:
 #
 # Packaging 
 #
-package: package-osx package-linux package-windows
+package: package-macos package-linux package-windows
 
-.PHONY: package-osx
-package-osx: out/osx
-	$(info OSX:     packaging archive)
-	@tar -czf ${OUTPUT_DIR}/strongback-cli-${VERSION}-osx.tar.gz -C ${OUTPUT_DIR}/osx strongback
-	@zip -r -j ${OUTPUT_DIR}/strongback-cli-${VERSION}-osx.zip ${OUTPUT_DIR}/osx > /dev/null
+.PHONY: package-macos
+package-macos: out/macos
+	$(info macos:   packaging archive)
+	@tar -czf ${OUTPUT_DIR}/strongback-cli-${VERSION}-macos.tar.gz -C ${OUTPUT_DIR}/macos strongback
+	@zip -r -j ${OUTPUT_DIR}/strongback-cli-${VERSION}-macos.zip ${OUTPUT_DIR}/macos > /dev/null
 
 .PHONY: package-linux
 package-linux: out/linux

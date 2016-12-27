@@ -28,6 +28,8 @@ After you've extracted the file and [added the directory to your `%PATH%`](http:
 
 This will show you the installed versions of the Strongback Java Library and WPILib for Java library.
 
+**NOTE:** If you are using the Git Bash terminal, you _must_ use `strongback.exe` rather than `strongback` everytime your run the Strongback CLI.
+
 ### Linux
 
 The Strongback CLI tool can go anywhere _except your home directory_. We recommend a `bin` directory in your home account. To create the `bin` directory and add it to your path, use the following commands:
@@ -48,7 +50,7 @@ That's it! Open up a new terminal and run the following:
 
 This will show you the installed versions of the Strongback Java Library and WPILib for Java library.
 
-### OS X and MacOS
+### MacOS and OS X
 
 The Strongback CLI tool can go anywhere _except your home directory_. We recommend a `bin` directory in your home account. To create the `bin` directory and add it to your path, use the following commands:
 
@@ -60,7 +62,7 @@ The Strongback CLI tool can go anywhere _except your home directory_. We recomme
 Then, download and install the `strongback` executable into your `bin` directory. You can use the following commands, though be sure to replace both `1.0.0` sequences in the URL with the [latest version](https://github.com/strongback/strongback-cli/releases):
 
     $ cd ~/bin
-    $ curl -o https://github.com/strongback/strongback-cli/releases/download/v1.0.0/strongback-cli-1.0.0-osx.tar.gz | tar xvz
+    $ curl -o https://github.com/strongback/strongback-cli/releases/download/v1.0.0/strongback-cli-1.0.0-macos.tar.gz | tar xvz
 
 That's it! Open up a new terminal and run the following:
 

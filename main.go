@@ -77,14 +77,14 @@ func NewEnvironment() *Environment {
 }
 
 func (env *Environment) DiscoverStrongback() {
-    dir := env.userHome + "/strongback"
+    dir := env.userHome + files.PathSeparator + "strongback"
     strongback := new(Component)
     strongback.path = dir
     strongback.version = "<none>"
     strongback.installed = false
     if files.IsExistingDirectory(dir) {
         // Load the properties file ...
-        propPath := dir + "/strongback.properties"
+        propPath := dir + files.PathSeparator + "strongback.properties"
         if files.IsExistingFile(propPath) {
             props := *files.LoadPropertiesFile(propPath)
 
@@ -101,8 +101,8 @@ func (env *Environment) DiscoverStrongback() {
 }
 
 func (env *Environment) DiscoverWpiLib() {
-    dir := env.userHome + "/wpilib"
-    propPath := dir + "/wpilib.properties"
+    dir := env.userHome + files.PathSeparator + "wpilib"
+    propPath := dir + files.PathSeparator + "wpilib.properties"
 
     props := *files.LoadPropertiesFile(propPath)
 
@@ -314,7 +314,7 @@ func (env *Environment) RemoveInstalledRelease(skipArchive bool, verbose bool) b
             archiveDirPath := env.existingStrongback.path + "-archives"
             files.MkDir(archiveDirPath)
             // Create a tar.gz file with the existing installation, overwriting any existing archive
-            historyArchivePath := archiveDirPath + "/" + historyArchiveName
+            historyArchivePath := archiveDirPath + files.PathSeparator + historyArchiveName
             fmt.Println("   archiving current " + env.existingStrongback.version + " installation to " + historyArchivePath)
             err := files.CreateTar(historyArchivePath, env.userHome, "strongback", false)
             if err != nil {
@@ -369,10 +369,10 @@ func (env *Environment) InstallRelease(desiredVersion string, skipArchive bool, 
     fmt.Println()
 
     archiveName := desiredAsset.Name
-    pathToArchive := env.userHome + "/" + archiveName
+    pathToArchive := env.userHome + files.PathSeparator + archiveName
 
     // See if the asset exists in our archive 
-    archiveAssetPath := env.existingStrongback.path + "-archives/" + archiveName
+    archiveAssetPath := env.existingStrongback.path + "-archives" + files.PathSeparator + archiveName
     if files.IsExistingFile(archiveAssetPath) {
         fmt.Println("   found previously installed archive at " + archiveAssetPath)
         pathToArchive = archiveAssetPath
@@ -407,10 +407,10 @@ func (env *Environment) InstallRelease(desiredVersion string, skipArchive bool, 
 
     if env.existingStrongback.installed {
         if env.RemoveInstalledRelease(skipArchive, verbose) {
-            fmt.Println("   replaced existing " + env.existingStrongback.version + " installation with " + desiredVersion + " at " + env.existingStrongback.path)
+            fmt.Println("   replacing existing " + env.existingStrongback.version + " installation with " + desiredVersion + " at " + env.existingStrongback.path)
         }
     } else {
-        fmt.Println("   installing at " + env.userHome + "/strongback")
+        fmt.Println("   installing at " + env.userHome + files.PathSeparator + "strongback")
     }
 
     // Install this release
@@ -421,6 +421,16 @@ func (env *Environment) InstallRelease(desiredVersion string, skipArchive bool, 
 
     // Update the one we know about
     env.DiscoverStrongback()
+
+    // If there is no Eclipse directory in the Strongback installation, then make it ...
+    if !files.IsExistingDirectory(env.existingStrongback.path + filepath.FromSlash("/java/eclipse")) {
+        projectName := "initialeclipseproject"
+        projectDirPath := env.existingStrongback.path + files.PathSeparator + projectName
+        os.RemoveAll(projectDirPath)
+        env.NewProject(projectName, env.existingStrongback.path, "", true, true, true)
+        os.RemoveAll(projectDirPath)
+    }
+
     return true
 }
 
@@ -446,7 +456,7 @@ func (env *Environment) DecodeFile(inputFile string, outputFile string, verbose 
         args = append(args, "-o")
         args = append(args, outputFile)
     }
-    commandPath := env.existingStrongback.path + "/java/bin/strongback" + suffix;
+    commandPath := env.existingStrongback.path + filepath.FromSlash("/java/bin/strongback") + suffix;
     out, err := exec.Command(commandPath, args...).Output()
     if err != nil {
         log.Fatal("Error running " + commandPath + " " + strings.Join(args, " "))
@@ -455,7 +465,7 @@ func (env *Environment) DecodeFile(inputFile string, outputFile string, verbose 
     fmt.Println(string(out))
 }
 
-func (env *Environment) NewProject(name string, directory string, packageName string, eclipse bool, overwrite bool) {
+func (env *Environment) NewProject(name string, directory string, packageName string, eclipse bool, overwrite bool, silent bool) {
     suffix := ".sh"
     if runtime.GOOS == "windows" {
         suffix = ".bat"
@@ -477,13 +487,15 @@ func (env *Environment) NewProject(name string, directory string, packageName st
     if overwrite {
         args = append(args, "-o")
     }
-    commandPath := env.existingStrongback.path + "/java/bin/strongback" + suffix;
+    commandPath := env.existingStrongback.path + filepath.FromSlash("/java/bin/strongback") + suffix;
     out, err := exec.Command(commandPath, args...).Output()
     if err != nil {
         log.Fatal("Error running " + commandPath + " " + strings.Join(args, " "))
         panic(err)
     }
-    fmt.Println(string(out))
+    if !silent {
+        fmt.Println(string(out))
+    }
 }
 
 func PrintUsage() {
@@ -790,7 +802,7 @@ func main() {
         if len(*newProjectPackage) > 0 {
             javaPackage = *newProjectPackage            
         }
-        if files.IsExistingFileOrDirectory(directory + "/" + projectName) {
+        if files.IsExistingFileOrDirectory(directory + files.PathSeparator + projectName) {
             fmt.Println()
             fmt.Println("Error: directory already exists and --overwrite not provided")
             PrintUsageLead()
@@ -799,7 +811,7 @@ func main() {
         }
         env := NewEnvironment()
         env.CheckInstalled()
-        env.NewProject(projectName, directory, javaPackage, !*newProjectNoEclipse, *newProjectOverwrite)
+        env.NewProject(projectName, directory, javaPackage, !*newProjectNoEclipse, *newProjectOverwrite, false)
         os.Exit(0)
     case "releases":
         releasesCommand.SetOutput(bytes.NewBuffer([]byte{}))
