@@ -1,3 +1,9 @@
+## 1.0.1
+* Bump version to 1.0.1
+* Corrected output of team number
+* Changed build to no longer use ZIP files
+* Corrected release scripts
+
 ## 1.0.0
 
 * Updated release scripts
