@@ -20,7 +20,7 @@ The instructions for Windows differ slightly from those for OS X and Linux.
 
 ### Windows
 
-Look at the [latest releases](https://github.com/strongback/strongback-cli/releases) of this utility, and download the file that ends with `...-windows.zip` or `...-windows.tar.gz` for the latest stable release. The archive contains a single `strongback.exe` file, so unzip or unpack the archive into any directory that is already included in or that [you can add to the `%PATH%` environment variable](http://www.howtogeek.com/118594/how-to-edit-your-system-path-for-easy-command-line-access/). We recommend your home directory, e.g., `C:\Users\<you>`.
+Look at the [latest releases](https://github.com/strongback/strongback-cli/releases) of this utility, and download the file that ends with `...-windows.tar.gz` for the latest stable release. The archive contains a single `strongback.exe` file, so extract the contents of the archive into any directory that is already included in or that [you can add to the `%PATH%` environment variable](http://www.howtogeek.com/118594/how-to-edit-your-system-path-for-easy-command-line-access/). We recommend your home directory, e.g., `C:\Users\<you>`.
 
 After you've extracted the file and [added the directory to your `%PATH%`](http://www.howtogeek.com/118594/how-to-edit-your-system-path-for-easy-command-line-access/), open up a command window and run the following command from several different directories:
 

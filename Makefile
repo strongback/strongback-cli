@@ -66,19 +66,19 @@ package: package-macos package-linux package-windows
 package-macos: out/macos
 	$(info macos:   packaging archive)
 	@tar -czf ${OUTPUT_DIR}/strongback-cli-${VERSION}-macos.tar.gz -C ${OUTPUT_DIR}/macos strongback
-	@zip -r -j ${OUTPUT_DIR}/strongback-cli-${VERSION}-macos.zip ${OUTPUT_DIR}/macos > /dev/null
+	#@zip -r -j ${OUTPUT_DIR}/strongback-cli-${VERSION}-macos.zip ${OUTPUT_DIR}/macos > /dev/null
 
 .PHONY: package-linux
 package-linux: out/linux
 	$(info Linux:   packaging archive)
 	@tar -czf ${OUTPUT_DIR}/strongback-cli-${VERSION}-linux.tar.gz -C ${OUTPUT_DIR}/linux strongback
-	@zip -r -j ${OUTPUT_DIR}/strongback-cli-${VERSION}-linux.zip ${OUTPUT_DIR}/linux > /dev/null
+	#@zip -r -j ${OUTPUT_DIR}/strongback-cli-${VERSION}-linux.zip ${OUTPUT_DIR}/linux > /dev/null
 
 .PHONY: package-windows
 package-windows: out/windows
 	$(info Windows: packaging archive)
 	@tar -czf ${OUTPUT_DIR}/strongback-cli-${VERSION}-windows.tar.gz -C ${OUTPUT_DIR}/windows strongback.exe
-	@zip -r -j ${OUTPUT_DIR}/strongback-cli-${VERSION}-windows.zip ${OUTPUT_DIR}/windows > /dev/null
+	#@zip -r -j ${OUTPUT_DIR}/strongback-cli-${VERSION}-windows.zip ${OUTPUT_DIR}/windows > /dev/null
 
 #
 # Dependencies 
