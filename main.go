@@ -234,7 +234,7 @@ func (env *Environment) PrintInfo() {
     if env.existingWpiLib.installed {
         fmt.Println("  location:         " + env.existingWpiLib.path)
         if env.teamNumber != 0 {
-            fmt.Println("  team number:      " + env.teamNumber)
+            fmt.Println("  team number:      " + string(env.teamNumber))
         } else {
             fmt.Println("  team number:      <create robot project in Eclipse>")
         }
@@ -374,19 +374,14 @@ func (env *Environment) InstallRelease(desiredVersion string, skipArchive bool, 
     fmt.Println()
 
     archiveName := desiredAsset.Name
-    pathToArchive := env.userHome + files.PathSeparator + archiveName
 
     // See if the asset exists in our archive 
     archiveAssetPath := env.existingStrongback.path + "-archives" + files.PathSeparator + archiveName
     if files.IsExistingFile(archiveAssetPath) {
         fmt.Println("   found previously installed archive at " + archiveAssetPath)
-        pathToArchive = archiveAssetPath
-    } else if files.IsExistingFile(pathToArchive) {
-        fmt.Println("   found previously downloaded archive at " + pathToArchive)
-        pathToArchive = pathToArchive
     } else {
         // Download the desired release to a local file
-        fmt.Print("   downloading " + archiveName + " to " + pathToArchive)
+        fmt.Print("   downloading " + archiveName + " to " + archiveAssetPath)
         // file does not exist, so download it
         resp, err := env.httpClient.Get(desiredAsset.Browser_download_url)
         if err != nil {
@@ -395,7 +390,7 @@ func (env *Environment) InstallRelease(desiredVersion string, skipArchive bool, 
         defer resp.Body.Close()
 
         // Create the file
-        file, err := os.Create(pathToArchive)
+        file, err := os.Create(archiveAssetPath)
         if err != nil {
             fmt.Println(err)
             panic(err)
@@ -419,7 +414,7 @@ func (env *Environment) InstallRelease(desiredVersion string, skipArchive bool, 
     }
 
     // Install this release
-    err := files.ExtractTar(pathToArchive, env.userHome, verbose)
+    err := files.ExtractTar(archiveAssetPath, env.userHome, verbose)
     if err != nil {
         panic(err)
     }
@@ -470,13 +465,22 @@ func (env *Environment) DecodeFile(inputFile string, outputFile string, verbose 
     fmt.Println(string(out))
 }
 
-func (env *Environment) NewProject(name string, directory string, packageName string, eclipse bool, overwrite bool, silent bool) {
+func (env *Environment) NewProject(name string, directory string, packageName string, eclipse bool, overwrite bool, silent bool) bool {
     suffix := ".sh"
     if runtime.GOOS == "windows" {
         suffix = ".bat"
     }
     if len(packageName) == 0 {
-        packageName = "org.frc" + strconv.Itoa(env.teamNumber)       
+        if env.teamNumber != 0 {
+            packageName = "org.frc" + strconv.Itoa(env.teamNumber) + ".robot"      
+        } else {
+            if !silent {
+                fmt.Println()
+                fmt.Println("No package name was specified, and WPILib has not been initialized with a team number.") 
+                fmt.Println("Aborting.")
+            }
+            return false           
+        }
     }
     var args []string
     args = append(args, "new-project")
@@ -501,6 +505,7 @@ func (env *Environment) NewProject(name string, directory string, packageName st
     if !silent {
         fmt.Println(string(out))
     }
+    return true
 }
 
 func PrintUsage() {
@@ -604,7 +609,7 @@ func PrintNewProjectUsage() {
     fmt.Println("       Defaults to the current directory.")
     fmt.Println()
     fmt.Println("   --package")
-    fmt.Println("       Specifies a custom initial package for Robot.java. Defaults to 'org.frc<teamNumber>'")
+    fmt.Println("       Specifies a custom initial package for Robot.java. Defaults to 'org.frc<teamNumber>.robot'")
     fmt.Println("       where the team number is obtained from the WPILib installation or is '0' if WPILib is not")
     fmt.Println("       installed and initialized through Eclipse.")
     fmt.Println()
@@ -816,8 +821,10 @@ func main() {
         }
         env := NewEnvironment()
         env.CheckInstalled()
-        env.NewProject(projectName, directory, javaPackage, !*newProjectNoEclipse, *newProjectOverwrite, false)
-        os.Exit(0)
+        if env.NewProject(projectName, directory, javaPackage, !*newProjectNoEclipse, *newProjectOverwrite, false) {
+            os.Exit(0)
+        }
+        os.Exit(4)
     case "releases":
         releasesCommand.SetOutput(bytes.NewBuffer([]byte{}))
         if err := releasesCommand.Parse(os.Args[2:]); err != nil {
