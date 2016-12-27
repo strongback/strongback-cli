@@ -15,7 +15,6 @@ import (
     "os/exec"
     "path/filepath"
     "runtime"
-    "strconv"
     "github.com/rickar/props"
     "strongback.org/cli/files"
 )
@@ -33,7 +32,7 @@ type Environment struct {
     existingWpiLib Component
     httpClient http.Client
     availableReleases []ReleaseInfo
-    teamNumber int
+    teamNumber string
 }
 
 type Component struct {
@@ -70,7 +69,7 @@ func NewEnvironment() *Environment {
     e := new(Environment)
     e.httpClient = http.Client{Timeout: 10 * time.Second}
     e.userHome = files.UserHomeDir()
-    e.teamNumber = 0
+    e.teamNumber = ""
     e.DiscoverStrongback()
     e.DiscoverWpiLib()
     return e
@@ -115,7 +114,7 @@ func (env *Environment) DiscoverWpiLib() {
         wpilib.installed = true
         teamNumberStr := props.Get("team-number")
         if len(teamNumberStr) != 0 {
-            env.teamNumber, _ = strconv.Atoi(teamNumberStr)
+            env.teamNumber = teamNumberStr
         }
     }
 
@@ -233,8 +232,8 @@ func (env *Environment) PrintInfo() {
     fmt.Println("WPILib Java Library")
     if env.existingWpiLib.installed {
         fmt.Println("  location:         " + env.existingWpiLib.path)
-        if env.teamNumber != 0 {
-            fmt.Println("  team number:      " + string(env.teamNumber))
+        if len(env.teamNumber) != 0 {
+            fmt.Println("  team number:      " + env.teamNumber)
         } else {
             fmt.Println("  team number:      <create robot project in Eclipse>")
         }
@@ -471,8 +470,8 @@ func (env *Environment) NewProject(name string, directory string, packageName st
         suffix = ".bat"
     }
     if len(packageName) == 0 {
-        if env.teamNumber != 0 {
-            packageName = "org.frc" + strconv.Itoa(env.teamNumber) + ".robot"      
+        if len(env.teamNumber) != 0 {
+            packageName = "org.frc" + env.teamNumber + ".robot"      
         } else {
             if !silent {
                 fmt.Println()
