@@ -88,6 +88,25 @@ func LoadPropertiesFile(path string) *props.Properties {
     return props
 }
 
+func CopyFile(sourcePath string, targetPath string) error {
+    in, err := os.Open(sourcePath)
+    if err != nil {
+        return err
+    }
+    defer in.Close()
+    out, err := os.Create(targetPath)
+    if err != nil {
+        return err
+    }
+    defer out.Close()
+    _, err = io.Copy(out, in)
+    cerr := out.Close()
+    if err != nil {
+        return err
+    }
+    return cerr
+}
+
 func CreateTar(destinationfile string, parentDir string, nameOfFileOrDirectoryToArchive string, verbose bool) error {
     prefix := parentDir
     if !strings.HasSuffix(prefix, PathSeparator) {

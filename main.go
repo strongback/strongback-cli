@@ -10,6 +10,7 @@ import (
     "fmt"
     "flag"
     "io"
+    "io/ioutil"
     "log"
     "os"
     "os/exec"
@@ -331,29 +332,37 @@ func (env *Environment) RemoveInstalledRelease(skipArchive bool, verbose bool) b
     return false
 }
 
-func (env *Environment) InstallRelease(desiredVersion string, skipArchive bool, verbose bool) bool {
+func (env *Environment) InstallRelease(desiredVersion string, skipArchive bool, forceReplaceLibs bool, verbose bool) bool {
     fmt.Println()
-    // See what is already installed
-    existingVersion := env.existingStrongback.version
-    if desiredVersion == existingVersion && desiredVersion != "" {
-        fmt.Printf("%s is already installed\n", desiredVersion)
-        return true
-    }
-
-    // Get the information for the desired release
     var release *ReleaseInfo
     latestAvailable := ""
     if len(desiredVersion) == 0 {
         release = env.GetLatestRelease(false)
         latestAvailable = "latest available"
-    } else {
-        release = env.GetRelease(desiredVersion)
+        desiredVersion = release.Name
+        if len(desiredVersion) == 0 {
+            fmt.Println("Unable to find the latest Strongback Java Library version")
+            return false            
+        }
+    }
+    // At this point, we have a valid desiredVersion
+
+    // See what is already installed
+    existingVersion := env.existingStrongback.version
+    if desiredVersion == existingVersion {
+        fmt.Printf("Strongback %s is already installed\n", desiredVersion)
+        // Add the Strongback JARs to the WPILib's `user/java/lib` directory if it exists
+        env.InstallLibsAsWpiUserLibs(forceReplaceLibs, verbose)
+        return true
     }
 
-
     if release == nil {
-        fmt.Println("Unable to find and install Strongback Java Library version " + desiredVersion)
-        return false
+        // The desiredVersion was specified and didn't match what we already have installed, so get the release info
+        release = env.GetRelease(desiredVersion)
+        if release == nil {
+            fmt.Println("Unable to find and install Strongback Java Library version " + desiredVersion)
+            return false
+        }
     }
 
     // Find the asset we want to download
@@ -418,6 +427,9 @@ func (env *Environment) InstallRelease(desiredVersion string, skipArchive bool, 
         panic(err)
     }
 
+    // Add the Strongback JARs to the WPILib's `user/java/lib` directory if it exists
+    env.InstallLibsAsWpiUserLibs(forceReplaceLibs, verbose)
+
     // Update the one we know about
     env.DiscoverStrongback()
 
@@ -430,6 +442,60 @@ func (env *Environment) InstallRelease(desiredVersion string, skipArchive bool, 
         os.RemoveAll(projectDirPath)
     }
 
+    return true
+}
+
+func (env *Environment) InstallLibsAsWpiUserLibs(forceReplaceLibs bool, verbose bool) bool {
+    // Add the Strongback JARs to the WPILib's `user/java/lib` directory if it exists
+    wpiUserLibPath := env.existingWpiLib.path + filepath.FromSlash("/user/java/lib/")
+    if !files.IsExistingDirectory(env.existingWpiLib.path + filepath.FromSlash("/user/java/lib")) {
+        // This version of the WPILib does not have a user lib directory
+        return false
+    }
+
+    // Always copy the Strongback JAR
+    fmt.Println("   adding as WPILib user libraries at " + wpiUserLibPath)
+    strongbackLibPath := env.existingStrongback.path + filepath.FromSlash("/java/lib/")
+    err := files.CopyFile(strongbackLibPath + "strongback.jar", wpiUserLibPath + "strongback.jar")
+    if err != nil {
+        panic(err)
+        return false
+    }
+    if verbose {
+        fmt.Println("       strongback.jar")
+    }
+
+    // Copy the non-Strongback JARs if they don't exist or if forced to
+    skipped := 0
+    entries, _ := ioutil.ReadDir(strongbackLibPath)
+    for _, f := range entries {
+        if f.Mode().IsRegular() && !strings.HasPrefix(f.Name(), "strongback") {
+            // This is a file and not the Strongback JAR, so try to copy this ...
+            pathToUserLib := wpiUserLibPath + f.Name()
+            if forceReplaceLibs || !files.IsExistingFile(pathToUserLib) {
+                if verbose {
+                    fmt.Println("       " + f.Name())
+                }
+                err = files.CopyFile(strongbackLibPath + f.Name(), pathToUserLib)
+                if err != nil {
+                    panic(err)
+                    return false
+                }
+            } else {
+                skipped = skipped + 1
+                if verbose {
+                    fmt.Println("       " + f.Name() + " exists and left unmodified")
+                }
+            }
+        }
+    }
+
+    if skipped != 0 {
+        fmt.Println()
+        fmt.Printf("Found and left untouched %d existing WPILib user library files.\n", skipped)
+        fmt.Printf("Use '--userlibs' option to force replacement with Strongback's version.\n")
+    }
+    fmt.Println()
     return true
 }
 
@@ -537,6 +603,10 @@ func PrintInstallUsage() {
     fmt.Println("   --skip-archive")
     fmt.Println("       Do not archive the current installation before installing the new version.")
     fmt.Println("       This flag does nothing if there is no current installation.")
+    fmt.Println()
+    fmt.Println("   --userlibs")
+    fmt.Println("       Always install Strongback and its 3rd party libraries as WPILib user libraries,")
+    fmt.Println("       even if the files already exist in the WPILib installation")
     fmt.Println()
     fmt.Println("   --verbose")
     fmt.Println("       Print additional detailed information during the operation.")
@@ -694,6 +764,7 @@ func main() {
     installCommand := flag.NewFlagSet("install", flag.ContinueOnError)
     installSkipArchive := installCommand.Bool("skip-archive", false, "Do not create an archive before upgrading.")
     installVerbose := installCommand.Bool("verbose", false, "Print additional detail.")
+    installUserlibs := installCommand.Bool("userlibs", false, "Install Strongback and 3rd party JARs as WPILib user libraries.")
 
     uninstallCommand := flag.NewFlagSet("uninstall", flag.ContinueOnError)
     uninstallSkipArchive := uninstallCommand.Bool("skip-archive", false, "Do not create an archive before removing.")
@@ -741,7 +812,7 @@ func main() {
             desiredVersion = installCommand.Arg(0)
         }
         env := NewEnvironment()
-        env.InstallRelease(desiredVersion, *installSkipArchive, *installVerbose)
+        env.InstallRelease(desiredVersion, *installSkipArchive, *installUserlibs, *installVerbose)
         os.Exit(0)
     case "uninstall":
         uninstallCommand.SetOutput(bytes.NewBuffer([]byte{}))
