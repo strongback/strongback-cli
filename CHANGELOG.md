@@ -1,3 +1,10 @@
+## 1.1.0
+* Bump version to 1.1.0
+* Added support for copying JARs into WPILib's user library directory
+* Changed to building a ZIP file for Windows, since Windows won't extract a .tar.gz file
+* Renamed file containing instructions for releasing
+* Minor corrections and cleanup
+
 ## 1.0.1
 * Bump version to 1.0.1
 * Corrected output of team number
