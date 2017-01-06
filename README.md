@@ -1,3 +1,12 @@
+[![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/strongback/strongback-cli/blob/master/LICENSE.txt)
+[![Build Status](https://travis-ci.org/strongback/strongback-cli.svg?branch=master)](https://travis-ci.org/strongback/strongback-cli)
+[![User chat](https://img.shields.io/badge/chat-users-brightgreen.svg)](https://gitter.im/strongback/users)
+[![Developer chat](https://img.shields.io/badge/chat-devs-brightgreen.svg)](https://gitter.im/strongback/dev)
+[![Google Group](https://img.shields.io/:mailing%20list-strongback-brightgreen.svg)](https://groups.google.com/forum/#!forum/strongback)
+[![Stack Overflow](http://img.shields.io/:stack%20overflow-strongback-brightgreen.svg)](http://stackoverflow.com/questions/tagged/strongback)
+
+Copyright Strongback Authors. Licensed under the [MIT License](https://github.com/strongback/strongback-cli/blob/master/LICENSE.txt).
+
 ## Strongback Command Line Interface (CLI)
 
 [Strongback](http://strongback.org) is a Java library for FRC robots, and to use it you must first install the library onto your development machine and set it up properly. This can be tedious and somewhat complicated, so we created the Strongback Command Line Interface (CLI) tool. It's a small self-contained executable program for Linux, Windows, and MacOS that makes it easy to install, upgrade, and use the Strongback Java Library. It can:
