@@ -95,9 +95,9 @@ Committing is as simple as:
 
     $ git commit .
 
-which should then pop up an editor of your choice in which you should place a good commit message. _*We do expect that all commit messages begin with a line starting with the issue number and ending with a short phrase that summarizes what changed in the commit.*_ For example:
+which should then pop up an editor of your choice in which you should place a good commit message. _*We do expect that all commit messages' first line ends starts with a short phrase that summarizes what changed in the commit and ends with the issue number in parentheses.*_ For example:
 
-    Issue-1234 Corrected help documentation
+    Corrected help documentation (Issue #1234)
 
 If that phrase is not sufficient to explain your changes, then the first line should be followed by a blank line and one or more paragraphs with additional details. 
 
@@ -118,7 +118,11 @@ Once you're finished making your changes, your topic branch should have your com
 
     $ git push origin issue-1234
 
-Then, in a browser go to https://github.com/strongback/strongback-cli, and you should see a small section near the top of the page with a button labeled "Create pull request". GitHub recognized that you pushed a new topic branch to your fork of the upstream repository, and it knows you probably want to create a pull request with those changes. Click on the button, and GitHub will present you with a short form that you should fill out with information about your pull request. The title should start with the issue number and include a short summary of the changes included in the pull request. (If the pull request contains a single commit, GitHub will automatically prepopulate the title and description fields from the commit message.) Add a description with details about your change and end with the line `fixes issue-1234` (but use the number of the issue for this pull request). When completed, press the "Create" button and copy the URL to the new pull request.
+Then, in a browser go to https://github.com/strongback/strongback-cli, and you should see a small section near the top of the page with a button labeled "Create pull request". GitHub recognized that you pushed a new topic branch to your fork of the upstream repository, and it knows you probably want to create a pull request with those changes. Click on the button, and GitHub will present you with a short form that you should fill out with information about your pull request. The title should start with the issue number and include a short summary of the changes included in the pull request. (If the pull request contains a single commit, GitHub will automatically prepopulate the title and description fields from the commit message.) Add a description with details about your change and end the description with:
+
+    Fixes #1234
+
+where `1234` is the issue number to which this pull request corresponds. When completed, press the "Create" button and copy the URL to the new pull request.
 
 At this point, you can switch to another issue and another topic branch. The Strongback committers will be notified of your new pull request, and will review it in short order. They may ask questions or make remarks using line notes or comments on the pull request. (By default, GitHub will send you an email notification of such changes, although you can control this via your GitHub preferences.)
 
