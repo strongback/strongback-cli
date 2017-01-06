@@ -17,15 +17,18 @@ LDFLAGS=-ldflags "-w -s -X main.Version=${VERSION} -X main.Date=${BUILD_DATE} -X
 GCFLAGS=-gcflags=-trimpath=${GOPATH} -asmflags=-trimpath=${GOPATH}
 
 #
+# Make everything
+#
+.PHONY: all
+all: macos linux windows
+
+#
 # Cleans and builds everything
 #
 .PHONY: clean
 clean:
 	$(info Cleaning 'out' directory)
 	@rm -rf ${OUTPUT_DIR}
-
-.PHONY: all
-all: macos linux windows
 
 #
 # Packaging for each OS
