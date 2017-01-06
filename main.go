@@ -384,20 +384,23 @@ func (env *Environment) InstallRelease(desiredVersion string, skipArchive bool, 
     archiveName := desiredAsset.Name
 
     // See if the asset exists in our archive 
-    archiveAssetPath := env.existingStrongback.path + "-archives" + files.PathSeparator + archiveName
+    archiveDirPath := env.existingStrongback.path + "-archives";
+    archiveAssetPath := archiveDirPath + files.PathSeparator + archiveName
     if files.IsExistingFile(archiveAssetPath) {
         fmt.Println("   found previously installed archive at " + archiveAssetPath)
     } else {
-        // Download the desired release to a local file
+        // Make sure the archive directory exists
+        files.MkDir(archiveDirPath)
+
+        // Download the desired release to a local file in the archive
         fmt.Print("   downloading " + archiveName + " to " + archiveAssetPath)
-        // file does not exist, so download it
         resp, err := env.httpClient.Get(desiredAsset.Browser_download_url)
         if err != nil {
             panic(err)
         }
         defer resp.Body.Close()
 
-        // Create the file
+        // Create the file in the archive
         file, err := os.Create(archiveAssetPath)
         if err != nil {
             fmt.Println(err)
