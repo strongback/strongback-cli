@@ -1,0 +1,8 @@
+language: go
+
+go:
+  - 1.7.x
+
+go_import_path: strongback.org/cli
+
+install: make dependencies
