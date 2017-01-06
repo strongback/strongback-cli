@@ -33,6 +33,7 @@ type Environment struct {
     existingWpiLib Component
     httpClient http.Client
     availableReleases []ReleaseInfo
+    dependencies []DependencyInfo
     teamNumber string
 }
 
@@ -41,6 +42,14 @@ type Component struct {
     version string
     path string
     properties *props.Properties
+}
+
+type DependencyInfo struct {
+    Name string
+    Version string
+    LibNames []string
+    Installed bool
+    SameVersion bool
 }
 
 type ReleaseInfo struct {
@@ -95,14 +104,38 @@ func (env *Environment) DiscoverStrongback() {
                 strongback.installed = true
             }
         }
+
+        // Load the information about each dependency
+        env.dependencies = make([]DependencyInfo, 0, 2)
+        filesInDir, err := ioutil.ReadDir(dir)
+        if err != nil {
+            log.Fatal(err)
+        }
+        for _, file := range filesInDir {
+
+            match, err := filepath.Match("*-lib-info.properties", file.Name())
+            if err != nil {
+                log.Fatal(err)
+            } else if match {
+                propPath := dir + files.PathSeparator + file.Name()
+                props := *files.LoadPropertiesFile(propPath)
+
+                info := &DependencyInfo{}
+                info.Name = props.Get("name")
+                info.Version = props.Get("version")
+                info.LibNames = strings.Split(props.Get("jarNames"), ",")
+                env.dependencies = append(env.dependencies, *info)
+            }
+        }
     }
+
 
     env.existingStrongback = *strongback
 }
 
 func (env *Environment) DiscoverWpiLib() {
-    dir := env.userHome + files.PathSeparator + "wpilib"
-    propPath := dir + files.PathSeparator + "wpilib.properties"
+    dir := env.userHome + filepath.FromSlash("/wpilib")
+    propPath := dir + filepath.FromSlash("/wpilib.properties")
 
     props := *files.LoadPropertiesFile(propPath)
 
@@ -117,27 +150,28 @@ func (env *Environment) DiscoverWpiLib() {
         if len(teamNumberStr) != 0 {
             env.teamNumber = teamNumberStr
         }
-    }
 
+        // See which Strongback dependencies are installed ...
+        for i, dependency := range env.dependencies {
+            exactMatch := true
+            installed := true
+            for _, libName := range dependency.LibNames {
+                strongbackFilePath := env.existingStrongback.path + filepath.FromSlash("/java/lib/" + libName)
+                wpiLibFilePath := dir + filepath.FromSlash("/user/java/lib/" + libName)
+                if !files.IsExistingFile(strongbackFilePath) || !files.IsExistingFile(wpiLibFilePath) {
+                    installed = false
+                }
+                if exactMatch && !files.FilesHaveSameContent(strongbackFilePath, wpiLibFilePath) {
+                    exactMatch = false
+                }
+            }
+            // Only considered installed if all the files match exactly ...
+            dependency.Installed = installed
+            dependency.SameVersion = exactMatch
+            env.dependencies[i] = dependency
+        }
+    }
     env.existingWpiLib = *wpilib
-}
-
-func (env *Environment) Print() {
-    fmt.Println("Strongback Library")
-    if env.existingStrongback.installed {
-        fmt.Println("  version:      " + env.existingStrongback.version)
-        fmt.Println("  build date:   " + env.existingStrongback.properties.Get("build.date"))
-        fmt.Println("  location:     " + env.existingStrongback.path)
-    } else {
-        fmt.Println("  not yet installed (use 'strongback install' command)")
-    }
-    if env.existingWpiLib.installed {
-        fmt.Println("WPILib")
-        //fmt.Println("  version:    " + env.existingWpiLib.version)
-        fmt.Println("  location:   " + env.existingWpiLib.path)
-    } else {
-        fmt.Println("WPILib not installed")
-    }
 }
 
 func (env *Environment) GetAvailableReleases() []ReleaseInfo {
@@ -171,6 +205,17 @@ func (env *Environment) GetRelease(version string) *ReleaseInfo {
     for _, release := range releases {
         if release.Name == version {
             return &release
+        }
+    }
+    return nil
+}
+
+func (env *Environment) GetDependencyInfoForJarFile(jarFileName string) *DependencyInfo {
+    for _, dependency := range env.dependencies {
+        for _, libName := range dependency.LibNames {
+            if libName == jarFileName {
+                return &dependency
+            }
         }
     }
     return nil
@@ -216,31 +261,52 @@ func (env *Environment) PrintVersion() {
 }
 
 func (env *Environment) PrintInfo() {
+
     fmt.Println()
-    fmt.Println("Strongback Command Line Interface (CLI)")
-    fmt.Println("  version:          " + Version)
-    fmt.Println("  build date:       " + Date)
+    fmt.Println("Strongback Client")
+    fmt.Println("  version:            " + Version)
+    fmt.Println("  build date:         " + Date)
     fmt.Println()
     fmt.Println("Strongback Java Library")
     if env.existingStrongback.installed {
-        fmt.Println("  current version:  " + env.existingStrongback.version)
-        fmt.Println("  build date:       " + env.existingStrongback.properties.Get("build.date"))
-        fmt.Println("  location:         " + env.existingStrongback.path)
+        fmt.Println("  location:           " + env.existingStrongback.path)
+        fmt.Println("  current version:    " + env.existingStrongback.version)
+        fmt.Println("  build date:         " + env.existingStrongback.properties.Get("build.date"))
+        strongbackWpiLibVersion := env.existingStrongback.properties.Get("wpilib.version")
+        if len(strongbackWpiLibVersion) > 0 {
+            fmt.Println("  requires WPILib:    " + strongbackWpiLibVersion + " (or later)")
+        }
     } else {
         fmt.Println("  not yet installed (use 'install' command)")
     }
     fmt.Println()
     fmt.Println("WPILib Java Library")
     if env.existingWpiLib.installed {
-        fmt.Println("  location:         " + env.existingWpiLib.path)
+        fmt.Println("  location:           " + env.existingWpiLib.path)
         if len(env.teamNumber) != 0 {
-            fmt.Println("  team number:      " + env.teamNumber)
+            fmt.Println("  team number:        " + env.teamNumber)
         } else {
-            fmt.Println("  team number:      <create robot project in Eclipse>")
+            fmt.Println("  team number:        <create robot project in Eclipse>")
         }
     } else {
         fmt.Println("  not yet installed")
     }
+    // Print the dependency libraries ...
+    for _, dependency := range env.dependencies {
+        fmt.Println()
+        fmt.Println(dependency.Name)
+        fmt.Println("  version:            " + dependency.Version)
+        fmt.Println("  location:           " + env.existingWpiLib.path + filepath.FromSlash("/user/java/lib/"))
+        fmt.Println("  JAR file(s):        " + strings.Join(dependency.LibNames, ", "))
+        if dependency.SameVersion {
+            fmt.Println("  installed at:       " + env.existingStrongback.path + filepath.FromSlash("/libs/"))
+        } else if dependency.Installed {
+            fmt.Println("  different version is installed; use 'strongback install-deps' to install this version")
+        } else {
+            fmt.Println("  not yet installed into WPILib; use 'strongback install-deps' to install this version")
+        }
+    }
+
     fmt.Println()
 }
 
@@ -435,6 +501,7 @@ func (env *Environment) InstallRelease(desiredVersion string, skipArchive bool, 
 
     // Update the one we know about
     env.DiscoverStrongback()
+    env.DiscoverWpiLib()
 
     // If there is no Eclipse directory in the Strongback installation, then make it ...
     if !files.IsExistingDirectory(env.existingStrongback.path + filepath.FromSlash("/java/eclipse")) {
@@ -457,7 +524,11 @@ func (env *Environment) InstallLibsAsWpiUserLibs(forceReplaceLibs bool, verbose 
     }
 
     // Always copy the Strongback JAR
-    fmt.Println("   adding as WPILib user libraries at " + wpiUserLibPath)
+    if forceReplaceLibs {
+        fmt.Println("   overwriting as WPILib user libraries at " + wpiUserLibPath)
+    } else {
+        fmt.Println("   adding WPILib user libraries at " + wpiUserLibPath)
+    }
     strongbackLibPath := env.existingStrongback.path + filepath.FromSlash("/java/lib/")
     err := files.CopyFile(strongbackLibPath + "strongback.jar", wpiUserLibPath + "strongback.jar")
     if err != nil {
@@ -475,9 +546,14 @@ func (env *Environment) InstallLibsAsWpiUserLibs(forceReplaceLibs bool, verbose 
         if f.Mode().IsRegular() && !strings.HasPrefix(f.Name(), "strongback") {
             // This is a file and not the Strongback JAR, so try to copy this ...
             pathToUserLib := wpiUserLibPath + f.Name()
+            dependency := env.GetDependencyInfoForJarFile(f.Name())
             if forceReplaceLibs || !files.IsExistingFile(pathToUserLib) {
+                libVersion := "<unknown>"
+                if dependency != nil {
+                    libVersion = dependency.Version
+                }
                 if verbose {
-                    fmt.Println("       " + f.Name())
+                    fmt.Println("       " + f.Name() + " version " + libVersion)
                 }
                 err = files.CopyFile(strongbackLibPath + f.Name(), pathToUserLib)
                 if err != nil {
@@ -485,9 +561,18 @@ func (env *Environment) InstallLibsAsWpiUserLibs(forceReplaceLibs bool, verbose 
                     return false
                 }
             } else {
-                skipped = skipped + 1
-                if verbose {
-                    fmt.Println("       " + f.Name() + " exists and left unmodified")
+                // Determine if this dependency is exactly the same as what Strongback requires
+                if dependency != nil && dependency.SameVersion {
+                    // It's an exact match, so report this
+                    if verbose {
+                        fmt.Println("       " + f.Name() + " already matches version required by Strongback")
+                    }
+                } else {
+                    // It's not an exact match, so 
+                    skipped = skipped + 1
+                    if verbose {
+                        fmt.Println("       " + f.Name() + " exists and left unmodified")
+                    }
                 }
             }
         }
@@ -496,9 +581,33 @@ func (env *Environment) InstallLibsAsWpiUserLibs(forceReplaceLibs bool, verbose 
     if skipped != 0 {
         fmt.Println()
         fmt.Printf("Found and left untouched %d existing WPILib user library files.\n", skipped)
-        fmt.Printf("Use '--userlibs' option to force replacement with Strongback's version.\n")
+        fmt.Printf("Use '--overwrite' option to force replacement with Strongback's version.\n")
     }
     fmt.Println()
+    return true
+}
+
+func (env *Environment) InstallDeps(forceReplaceLibs bool, verbose bool) bool {
+    if !env.existingStrongback.installed {
+        return env.InstallRelease("",false, forceReplaceLibs, verbose)
+    }
+    fmt.Println("")
+    fmt.Println("Installing Strongback " + env.existingStrongback.version + " dependencies.")
+    // Add the Strongback JARs to the WPILib's `user/java/lib` directory if it exists
+    env.InstallLibsAsWpiUserLibs(forceReplaceLibs, verbose)
+
+    // Update the one we know about
+    env.DiscoverStrongback()
+    env.DiscoverWpiLib()
+
+    // If there is no Eclipse directory in the Strongback installation, then make it ...
+    if !files.IsExistingDirectory(env.existingStrongback.path + filepath.FromSlash("/java/eclipse")) {
+        projectName := "initialeclipseproject"
+        projectDirPath := env.existingStrongback.path + files.PathSeparator + projectName
+        os.RemoveAll(projectDirPath)
+        env.NewProject(projectName, env.existingStrongback.path, "", true, true, true)
+        os.RemoveAll(projectDirPath)
+    }
     return true
 }
 
@@ -584,6 +693,8 @@ func PrintUsage() {
     fmt.Println("   help          Displays information about using this utility")
     fmt.Println("   info          Displays the information about this utility and what's installed")
     fmt.Println("   install       Install or upgrade the Strongback Java Library")
+    fmt.Println("   install-deps  Install the's 3rd party libraries in the current Strongback Java Library")
+    fmt.Println("                 as WPILib user libraries")
     fmt.Println("   new-project   Creates a new project configured to use Strongback (only 1.x)")
     fmt.Println("   releases      Display the available versions of the Strongback Java Library")
     fmt.Println("   version       Display the currently installed version")
@@ -596,7 +707,7 @@ func PrintUsage() {
 }
 
 func PrintInstallUsage() {
-    fmt.Println("   " + ExecName + " install [--skip-archive] [--verbose] [version] ")
+    fmt.Println("   " + ExecName + " install [--skip-archive] [--overwrite] [--verbose] [version] ")
     fmt.Println()
     fmt.Println("Description:")
     fmt.Println("   Install or upgrade the Strongback Java Library.")
@@ -607,9 +718,9 @@ func PrintInstallUsage() {
     fmt.Println("       Do not archive the current installation before installing the new version.")
     fmt.Println("       This flag does nothing if there is no current installation.")
     fmt.Println()
-    fmt.Println("   --userlibs")
-    fmt.Println("       Always install Strongback and its 3rd party libraries as WPILib user libraries,")
-    fmt.Println("       even if the files already exist in the WPILib installation")
+    fmt.Println("   --overwrite")
+    fmt.Println("       Always install Strongback's 3rd party libraries as WPILib user libraries,")
+    fmt.Println("       replacing any user library files that already exist in the WPILib installation.")
     fmt.Println()
     fmt.Println("   --verbose")
     fmt.Println("       Print additional detailed information during the operation.")
@@ -619,6 +730,24 @@ func PrintInstallUsage() {
     fmt.Println("   version")
     fmt.Println("       The version of the Strongback Java Library that should be installed.")
     fmt.Println("       The latest version is used if an explicit version is not provided.")
+    fmt.Println()
+}
+
+func PrintInstallDepsUsage() {
+    fmt.Println("   " + ExecName + " install-deps [--overwrite] [--verbose]")
+    fmt.Println()
+    fmt.Println("Description:")
+    fmt.Println("   Install the's 3rd party libraries in the current Strongback Java Library")
+    fmt.Println("   as WPILib user libraries")
+    fmt.Println()
+    fmt.Println("Options:")
+    fmt.Println()
+    fmt.Println("   --overwrite")
+    fmt.Println("       Always install Strongback's 3rd party libraries as WPILib user libraries,")
+    fmt.Println("       replacing any user library files that already exist in the WPILib installation.")
+    fmt.Println()
+    fmt.Println("   --verbose")
+    fmt.Println("       Print additional detailed information during the operation.")
     fmt.Println()
 }
 
@@ -767,7 +896,11 @@ func main() {
     installCommand := flag.NewFlagSet("install", flag.ContinueOnError)
     installSkipArchive := installCommand.Bool("skip-archive", false, "Do not create an archive before upgrading.")
     installVerbose := installCommand.Bool("verbose", false, "Print additional detail.")
-    installUserlibs := installCommand.Bool("userlibs", false, "Install Strongback and 3rd party JARs as WPILib user libraries.")
+    installUserlibs := installCommand.Bool("overwrite", false, "Install Strongback and 3rd party JARs as WPILib user libraries.")
+
+    installDepsCommand := flag.NewFlagSet("install-deps", flag.ContinueOnError)
+    installDepsVerbose := installDepsCommand.Bool("verbose", false, "Print additional detail.")
+    installDepsUserlibs := installDepsCommand.Bool("overwrite", false, "Install Strongback and 3rd party JARs as WPILib user libraries.")
 
     uninstallCommand := flag.NewFlagSet("uninstall", flag.ContinueOnError)
     uninstallSkipArchive := uninstallCommand.Bool("skip-archive", false, "Do not create an archive before removing.")
@@ -816,6 +949,22 @@ func main() {
         }
         env := NewEnvironment()
         env.InstallRelease(desiredVersion, *installSkipArchive, *installUserlibs, *installVerbose)
+        os.Exit(0)
+    case "install-deps":
+        installDepsCommand.SetOutput(bytes.NewBuffer([]byte{}))
+        if err := installDepsCommand.Parse(os.Args[2:]); err != nil {
+            PrintUsageError(err)
+            PrintUsageLead()
+            PrintInstallDepsUsage()
+            os.Exit(1)
+        }
+        if HasFlagsAfterArguments(installCommand) {
+            PrintUsageLead()
+            PrintInstallDepsUsage()
+            os.Exit(1)
+        }
+        env := NewEnvironment()
+        env.InstallDeps(*installDepsUserlibs, *installDepsVerbose)
         os.Exit(0)
     case "uninstall":
         uninstallCommand.SetOutput(bytes.NewBuffer([]byte{}))
@@ -958,10 +1107,6 @@ func main() {
         PrintUsage()
         os.Exit(1)
     }
-
-	// dir := UserHomeDir()
-    env := NewEnvironment()
-    env.Print()
 }
 
 

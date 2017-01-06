@@ -3,6 +3,7 @@ package files
 import (
 	"archive/tar"
     "bufio"
+    "bytes"
 	"compress/gzip"
 	"fmt"
 	"io"
@@ -62,6 +63,33 @@ func IsExistingDirectory(path string) bool {
         }
     }
     return false
+}
+
+func FilesHaveSameContent(file1, file2 string) bool {
+    if !IsExistingFile(file1) || !IsExistingFile(file2) {
+        return false
+    }
+    sf, err := os.Open(file1)
+    if err != nil {
+        panic(err)
+    }
+
+    df, err := os.Open(file2)
+    if err != nil {
+        panic(err)
+    }
+
+    sscan := bufio.NewScanner(sf)
+    dscan := bufio.NewScanner(df)
+
+    for sscan.Scan() {
+        dscan.Scan()
+        if !bytes.Equal(sscan.Bytes(), dscan.Bytes()) {
+            return false
+        }
+    }
+
+    return true
 }
 
 func MkDir(path string) {
