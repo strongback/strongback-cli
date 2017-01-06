@@ -676,7 +676,7 @@ func PrintNewProjectUsage() {
     fmt.Println("       The name of the new project.")
     fmt.Println()
     fmt.Println("Options:")
-    fmt.Println("   --dir <parent_directory>")
+    fmt.Println("   --directory <parent_directory>")
     fmt.Println("       The directory where this utility should place the new project.")
     fmt.Println("       Defaults to the current directory.")
     fmt.Println()
