@@ -13,7 +13,14 @@ BUILD_TIMESTAMP=`date +%FT%T%z`
 BUILD_DATE=`date +"%Y-%m-%d"`
 
 # Setup the -ldflags option for go build here
-LDFLAGS=-ldflags "-w -s -X main.Version=${VERSION} -X main.Date=${BUILD_DATE} -X main.ExecName=${BINARY} -X main.Build=${BUILD_TIMESTAMP}"
+LDFLAGS=-ldflags "-w -s -X main.Version=${VERSION} -X main.Date=${BUILD_DATE} -X main.ExecName=${BINARY} -X main.Build=${BUILD_TIMESTAMP}" 
+GCFLAGS=-gcflags=-trimpath=${GOPATH} -asmflags=-trimpath=${GOPATH}
+
+#
+# Make everything
+#
+.PHONY: all
+all: macos linux windows
 
 #
 # Cleans and builds everything
@@ -22,9 +29,6 @@ LDFLAGS=-ldflags "-w -s -X main.Version=${VERSION} -X main.Date=${BUILD_DATE} -X
 clean:
 	$(info Cleaning 'out' directory)
 	@rm -rf ${OUTPUT_DIR}
-
-.PHONY: all
-all: macos linux windows
 
 #
 # Packaging for each OS
@@ -43,15 +47,15 @@ windows: out/windows package-windows
 #
 out/macos: dependencies
 	$(info macos:   building executable)
-	@GOOS="darwin" GOARCH="amd64" go build ${LDFLAGS} -o ${OUTPUT_DIR}/macos/strongback ${WHAT}
+	@GOOS="darwin" GOARCH="amd64" go build ${LDFLAGS} ${GCFLAGS} -o ${OUTPUT_DIR}/macos/strongback ${WHAT}
 
 out/linux: dependencies
 	$(info Linux:   building executable)
-	@GOOS="linux" GOARCH="amd64" go build ${LDFLAGS} -o ${OUTPUT_DIR}/linux/strongback ${WHAT}
+	@GOOS="linux" GOARCH="amd64" go build ${LDFLAGS} ${GCFLAGS} -o ${OUTPUT_DIR}/linux/strongback ${WHAT}
 
 out/windows: dependencies
 	$(info Windows: building executable)
-	@GOOS="windows" GOARCH="386" go build ${LDFLAGS} -o ${OUTPUT_DIR}/windows/strongback.exe ${WHAT}
+	@GOOS="windows" GOARCH="386" go build ${LDFLAGS} ${GCFLAGS} -o ${OUTPUT_DIR}/windows/strongback.exe ${WHAT}
 
 .PHONY: test
 test:
