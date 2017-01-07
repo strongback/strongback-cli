@@ -1,3 +1,16 @@
+## 1.2.0
+* Bump version to 1.2.0
+* Expose more information about 3rd party dependencies
+* Added Travis-CI automated builds
+* Fixed the `new-project` usage to have correct/consistent option names (Issue #5)
+* Added badges to README
+* Changed the contributing description so that issue numbers are at the end of the first line for each commit message.
+* Merge pull request #4 from rhauch/issue-1
+* Issue 1 - Make sure archive directory exists
+* Merge pull request #3 from rhauch/issue-2
+* Changed the Makefile to run `make all` by default
+* Issue 2 - Removed developer’s GOPATH from stack trace output
+
 ## 1.1.0
 * Bump version to 1.1.0
 * Added support for copying JARs into WPILib's user library directory
