@@ -94,7 +94,7 @@ func FilesHaveSameContent(file1, file2 string) bool {
 
 func MkDir(path string) {
     if _, err := os.Stat(path); os.IsNotExist(err) {
-        os.Mkdir(path, 0700)
+        os.MkdirAll(path, 0700)
     }
 }
 

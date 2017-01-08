@@ -137,8 +137,8 @@ func (env *Environment) DiscoverWpiLib() {
     dir := env.userHome + filepath.FromSlash("/wpilib")
     wpilib := new(Component)
     wpilib.path = dir
-    if files.IsExistingDirectory(dir) {
-        propPath := dir + filepath.FromSlash("/wpilib.properties")
+    propPath := dir + filepath.FromSlash("/wpilib.properties")
+    if files.IsExistingDirectory(dir) && files.IsExistingFile(propPath) {
         props := *files.LoadPropertiesFile(propPath)
 
         // Create the installed component ...
@@ -519,8 +519,13 @@ func (env *Environment) InstallRelease(desiredVersion string, skipArchive bool, 
 }
 
 func (env *Environment) InstallLibsAsWpiUserLibs(forceReplaceLibs bool, verbose bool) bool {
-    // Add the Strongback JARs to the WPILib's `user/java/lib` directory if it exists
     wpiUserLibPath := env.existingWpiLib.path + filepath.FromSlash("/user/java/lib/")
+    if !env.existingWpiLib.installed || !files.IsExistingDirectory(env.existingWpiLib.path) {
+        // There is no WPILib directory, so make the user lib directory
+        fmt.Println("   making WPILib user library directory at " + wpiUserLibPath)
+        files.MkDir(wpiUserLibPath)
+    }
+    // Add the Strongback JARs to the WPILib's `user/java/lib` directory if it exists
     if !files.IsExistingDirectory(env.existingWpiLib.path + filepath.FromSlash("/user/java/lib")) {
         // This version of the WPILib does not have a user lib directory
         return false
