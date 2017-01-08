@@ -1,3 +1,8 @@
+## 1.2.2
+* Bump version to 1.2.2
+* Additional fixes when WPILib directory does not yet exist
+* Added more error handling when WPILib is not yet installed
+
 ## 1.2.1
 * Bump version to 1.2.1
 * Corrected behavior of `--overwrite` flag of `new-project` (#10)
