@@ -135,41 +135,44 @@ func (env *Environment) DiscoverStrongback() {
 
 func (env *Environment) DiscoverWpiLib() {
     dir := env.userHome + filepath.FromSlash("/wpilib")
-    propPath := dir + filepath.FromSlash("/wpilib.properties")
-
-    props := *files.LoadPropertiesFile(propPath)
-
-    // Create the installed component ...
     wpilib := new(Component)
     wpilib.path = dir
-    wpilib.properties = &props
-    if &props != nil {
-        wpilib.version = props.Get("version")
-        wpilib.installed = true
-        teamNumberStr := props.Get("team-number")
-        if len(teamNumberStr) != 0 {
-            env.teamNumber = teamNumberStr
-        }
+    if files.IsExistingDirectory(dir) {
+        propPath := dir + filepath.FromSlash("/wpilib.properties")
+        props := *files.LoadPropertiesFile(propPath)
 
-        // See which Strongback dependencies are installed ...
-        for i, dependency := range env.dependencies {
-            exactMatch := true
-            installed := true
-            for _, libName := range dependency.LibNames {
-                strongbackFilePath := env.existingStrongback.path + filepath.FromSlash("/java/lib/" + libName)
-                wpiLibFilePath := dir + filepath.FromSlash("/user/java/lib/" + libName)
-                if !files.IsExistingFile(strongbackFilePath) || !files.IsExistingFile(wpiLibFilePath) {
-                    installed = false
-                }
-                if exactMatch && !files.FilesHaveSameContent(strongbackFilePath, wpiLibFilePath) {
-                    exactMatch = false
-                }
+        // Create the installed component ...
+        wpilib.properties = &props
+        if &props != nil {
+            wpilib.version = props.Get("version")
+            wpilib.installed = true
+            teamNumberStr := props.Get("team-number")
+            if len(teamNumberStr) != 0 {
+                env.teamNumber = teamNumberStr
             }
-            // Only considered installed if all the files match exactly ...
-            dependency.Installed = installed
-            dependency.SameVersion = exactMatch
-            env.dependencies[i] = dependency
+
+            // See which Strongback dependencies are installed ...
+            for i, dependency := range env.dependencies {
+                exactMatch := true
+                installed := true
+                for _, libName := range dependency.LibNames {
+                    strongbackFilePath := env.existingStrongback.path + filepath.FromSlash("/java/lib/" + libName)
+                    wpiLibFilePath := dir + filepath.FromSlash("/user/java/lib/" + libName)
+                    if !files.IsExistingFile(strongbackFilePath) || !files.IsExistingFile(wpiLibFilePath) {
+                        installed = false
+                    }
+                    if exactMatch && !files.FilesHaveSameContent(strongbackFilePath, wpiLibFilePath) {
+                        exactMatch = false
+                    }
+                }
+                // Only considered installed if all the files match exactly ...
+                dependency.Installed = installed
+                dependency.SameVersion = exactMatch
+                env.dependencies[i] = dependency
+            }
         }
+    } else {
+        wpilib.properties = props.NewProperties()
     }
     env.existingWpiLib = *wpilib
 }
