@@ -674,13 +674,41 @@ func (env *Environment) NewProject(name string, directory string, packageName st
         args = append(args, "-o")
     }
     commandPath := env.existingStrongback.path + filepath.FromSlash("/java/bin/strongback") + suffix;
-    out, err := exec.Command(commandPath, args...).Output()
+    cmd := exec.Command(commandPath, args...)
+    var stdout bytes.Buffer
+    var stderr bytes.Buffer
+    cmd.Stdout = &stdout
+    cmd.Stderr = &stderr
+    err := cmd.Run()
+    outMsg := stdout.String()
+    errMsg := stderr.String()
+    // Look for specific errors output by this command
+    if len(errMsg) != 0 {
+        if !silent {
+            errMsg := strings.Replace(errMsg,"run this application", "run this command", 1)
+            errMsg = strings.Replace(errMsg,"-o option", "--overwrite flag", 1)
+            if strings.Contains(errMsg, "file already exists") {
+                // Get the name of the file that already exists ...
+                slash := strings.LastIndexAny(errMsg, "/\\")
+                if slash > -1 {
+                    existingFileName := strings.TrimSpace(errMsg[slash:len(errMsg)])
+                    fmt.Println()
+                    fmt.Println("Error: the file '" + existingFileName + "'' already exists. Run this command with the --overwrite flag to replace any existing files.")
+                    return false
+                }
+            }
+            // Not sure what error this is, so just print it
+            fmt.Println()
+            fmt.Println("Error: " + errMsg)
+        }
+        return false
+    }
     if err != nil {
         log.Fatal("Error running " + commandPath + " " + strings.Join(args, " "))
         panic(err)
     }
     if !silent {
-        fmt.Println(string(out))
+        fmt.Println(outMsg)
     }
     return true
 }
@@ -792,7 +820,7 @@ func PrintReleasesUsage() {
 
 func PrintNewProjectUsage() {
     fmt.Println("   " + ExecName + " new-project [--directory <path>] [--package <packageName>]")
-    fmt.Println("                          [--no-eclipse] [--overrite]")
+    fmt.Println("                          [--no-eclipse] [--overwrite]")
     fmt.Println("                          name")
     fmt.Println()
     fmt.Println("Description:")
@@ -818,7 +846,7 @@ func PrintNewProjectUsage() {
     fmt.Println("       Use this if you are not using Eclipse to avoid creating Eclipse project metadata files.")
     fmt.Println()
     fmt.Println("   --overwrite")
-    fmt.Println("       Forces overwriting of existing files.")
+    fmt.Println("       Forces overwriting of existing files. This is required if the directory or files exist.")
     fmt.Println()
 }
 
@@ -877,7 +905,7 @@ func HasFlagsAfterArguments(command *flag.FlagSet) bool {
         arg := command.Arg(i)
         if strings.HasPrefix(arg, "--") {
             fmt.Println()
-            fmt.Println("Error: unexpected flag " + arg + " appearing after arguments")
+            fmt.Println("Error: unexpected flag " + arg + " appearing after arguments. Put all flags before arguments.")
             return true          
         }
     }
@@ -1034,9 +1062,10 @@ func main() {
         if len(*newProjectPackage) > 0 {
             javaPackage = *newProjectPackage            
         }
-        if files.IsExistingFileOrDirectory(directory + files.PathSeparator + projectName) {
+        targetPath := directory + files.PathSeparator + projectName
+        if files.IsExistingFile(targetPath) {
             fmt.Println()
-            fmt.Println("Error: directory already exists and --overwrite not provided")
+            fmt.Println("Error: " + targetPath + " is a file, so unable to create a project directory at this location.")
             PrintUsageLead()
             PrintNewProjectUsage()
             os.Exit(3)
