@@ -1,3 +1,7 @@
+## 1.2.1
+* Bump version to 1.2.1
+* Corrected behavior of `--overwrite` flag of `new-project` (#10)
+
 ## 1.2.0
 * Bump version to 1.2.0
 * Expose more information about 3rd party dependencies
