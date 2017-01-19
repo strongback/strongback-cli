@@ -46,10 +46,10 @@ The Strongback CLI tool can go anywhere _except your home directory_. We recomme
     $ echo "PATH=\${HOME}/bin:\${PATH}" >> ~/.bashrc
     $ source ~/.bashrc
 
-Then, use the following commands to download the `strongback` executable and place it into your `bin` directory, though be sure to replace both `1.0.1` sequences in the URL with the [latest version](https://github.com/strongback/strongback-cli/releases):
+Then, use the following commands to download the `strongback` executable and place it into your `bin` directory, though be sure to replace both `1.2.2` sequences in the URL with the [latest version](https://github.com/strongback/strongback-cli/releases):
 
     $ cd ~/bin
-    $ curl -o https://github.com/strongback/strongback-cli/releases/download/v1.0.1/strongback-cli-1.0.1-linux.tar.gz | tar xvz
+    $ curl -L https://github.com/strongback/strongback-cli/releases/download/v1.2.2/strongback-cli-1.2.2-linux.tar.gz | tar -xvz
 
 That's it! Open up a new terminal and run the following:
 
@@ -66,10 +66,10 @@ The Strongback CLI tool can go anywhere _except your home directory_. We recomme
     $ echo "PATH=\${HOME}/bin:\${PATH}" >> ~/.bashrc
     $ source ~/.bashrc
 
-Then, use the following commands to download the `strongback` executable and place it into your `bin` directory, though be sure to replace both `1.0.1` sequences in the URL with the [latest version](https://github.com/strongback/strongback-cli/releases):
+Then, use the following commands to download the `strongback` executable and place it into your `bin` directory, though be sure to replace both `1.2.2` sequences in the URL with the [latest version](https://github.com/strongback/strongback-cli/releases):
 
     $ cd ~/bin
-    $ curl -o https://github.com/strongback/strongback-cli/releases/download/v1.0.1/strongback-cli-1.0.1-macos.tar.gz | tar xvz
+    $ curl -L https://github.com/strongback/strongback-cli/releases/download/v1.2.2/strongback-cli-1.2.2-macos.tar.gz | tar -xvz
 
 That's it! Open up a new terminal and run the following:
 
