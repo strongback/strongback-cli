@@ -77,7 +77,7 @@ type AssetInfo struct {
 // NewProperties creates a new environment.
 func NewEnvironment() *Environment {
     e := new(Environment)
-    e.httpClient = http.Client{Timeout: 10 * time.Second}
+    e.httpClient = http.Client{Timeout: 300 * time.Second}
     e.userHome = files.UserHomeDir()
     e.teamNumber = ""
     e.DiscoverStrongback()
